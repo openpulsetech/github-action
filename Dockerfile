@@ -5,7 +5,8 @@ RUN apk add --no-cache nodejs npm jq
 WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
-COPY upload-sbom.js /app/upload-sbom.js
+COPY main.js /app/main.js
+COPY sbom.js /app/sbom.js
 COPY package.json package-lock.json /app/
 
 RUN npm install
