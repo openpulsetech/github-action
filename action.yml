@@ -1,0 +1,13 @@
+name: 'SBOM Uploader'
+description: 'Generates and uploads SBOM'
+author: 'Neo'
+inputs:
+  who-to-greet:
+    description: 'Optional greeting'
+    required: false
+    default: 'world'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.who-to-greet }}
