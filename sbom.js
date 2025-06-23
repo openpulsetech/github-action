@@ -79,6 +79,7 @@ uploadSBOM().catch((err) => {
   console.error('❌ Unexpected error:', err.message);
   process.exit(1);
 });
+module.exports = uploadSBOM;
 
 
 
