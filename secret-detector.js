@@ -54,7 +54,7 @@ module.exports = async function () {
     try {
         // Run the scan
         const reportFilePath = await scanForSecretsAndReturnReport(scanDir, repoName);
-        
+        console.log("repo name", repoName);
         // Check the report for secrets
         const result = await checkForSecrets(reportFilePath);
 
