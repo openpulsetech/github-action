@@ -48,7 +48,7 @@ function checkForSecrets(reportFilePath) {
 
 // Main function to run the secret detection
 module.exports = async function () {
-    const scanDir = '.'; // Current directory
+    const scanDir = './src'; // Current directory
     const repoName = process.env.GITHUB_REPOSITORY.split('/')[1] || 'github-action'; // Get repo name dynamically
 
     try {
