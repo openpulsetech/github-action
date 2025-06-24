@@ -7,6 +7,8 @@ WORKDIR /app
 COPY entrypoint.sh /entrypoint.sh
 COPY main.js /app/main.js
 COPY sbom.js /app/sbom.js
+COPY secret-detector.js /app/secret-detector.js
+
 COPY package.json package-lock.json /app/
 
 RUN npm install
