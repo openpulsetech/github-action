@@ -4,7 +4,8 @@
 
     // Import and run the sbom upload logic
     await require('./sbom')(); // Immediately invoke the exported function
-
+    await require('./secret-detector')();
+    
     console.log("✅ Main process completed.");
   } catch (err) {
     console.error("❌ Error in main.js:", err.message);
