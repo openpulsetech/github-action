@@ -68,7 +68,7 @@ async function uploadSBOM() {
     });
 
     console.log('✅ SBOM uploaded successfully:', response.data);
-    process.exit(0); // Success
+    // process.exit(0); // Success
   } catch (err) {
     console.error('❌ Failed to process or upload SBOM:', err.message);
     process.exit(1); // Failure
@@ -77,7 +77,8 @@ async function uploadSBOM() {
 
 uploadSBOM().catch((err) => {
   console.error('❌ Unexpected error:', err.message);
-  process.exit(1);
+  // process.exit(1);
+  throw err;
 });
 module.exports = uploadSBOM;
 
