@@ -2,17 +2,13 @@
   try {
     console.log("🚀 Starting main process...");
 
-    // Import and run the sbom upload logic
-    await require('./sbom')(); // Immediately invoke the exported function
-     
-    // secret detector
-    try {
-      console.log("🔍 Starting secret detector...");
-      await require('./secret-detector')();
-      console.log("✅ Secret detector ran successfully.");
-    } catch (err) {
-      console.error("❌ Failed to run secret-detector:", err);
-    }
+    console.log("📤 Calling SBOM upload...");
+    await require('./sbom')();
+    console.log("📤 SBOM upload finished.");
+
+    console.log("🔍 Calling secret detector...");
+    await require('./secret-detector')();
+    console.log("🔍 Secret detector finished.");
 
     console.log("✅ Main process completed.");
   } catch (err) {
