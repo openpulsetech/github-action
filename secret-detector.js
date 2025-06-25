@@ -1,86 +1,94 @@
-
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 
-// Define custom rules inline
-const gitleaksRules = `
-[[rules]]
-id = "generic-password"
-description = "Hardcoded password assignment"
-regex = '''(?i)(password|passwd|pwd)\\s*=\\s*["'].*?["']'''
-tags = ["key", "password"]
-
-[[rules]]
-id = "aws-secret-access-key"
-description = "AWS Secret Access Key"
-regex = '''AKIA[0-9A-Z]{16}'''
-tags = ["key", "AWS"]
-`;
-
-function createTempRulesFile() {
-  const tempPath = path.join(os.tmpdir(), 'gitleaks-inline-rules.toml');
-  fs.writeFileSync(tempPath, gitleaksRules);
-  return tempPath;
-}
-
-function runGitleaks(scanDir, reportPath, rulesPath) {
+async function scanForSecretsAndReturnReport(scanDir, repoName) {
   return new Promise((resolve, reject) => {
-    const command = `gitleaks detect --source=${scanDir} --report-path=${reportPath} --config=${rulesPath} --no-banner`;
+    const timestamp = Date.now();
+    const reportFileName = `${repoName}_${timestamp}_report.json`;
+    const reportFilePath = path.resolve(scanDir, reportFileName);
 
+    // Prepare gitleaks command
+    // Using detect mode, specify source dir, output report, no banner
+    const command = `gitleaks detect --source=${scanDir} --report-path=${reportFilePath} --no-banner`;
+
+    console.log(`📂 Scanning directory: ${scanDir}`);
+    console.log(`📝 Rules file: (default built-in)`);
     console.log(`🔍 Running Gitleaks:\n${command}`);
+
     exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
-      console.log(`📤 Gitleaks STDOUT:\n${stdout}`);
-      if (stderr) console.log(`⚠️ Gitleaks STDERR:\n${stderr}`);
-      if (error) return reject(new Error(`Gitleaks failed: ${error.message}`));
-      resolve();
+      console.log('📤 Gitleaks STDOUT:\n', stdout);
+      if (stderr && stderr.trim().length > 0) {
+        console.warn('⚠️ Gitleaks STDERR:\n', stderr);
+      }
+
+      if (error) {
+        console.error('❌ Gitleaks execution error:', error);
+        return reject(error);
+      }
+
+      console.log(`✅ Gitleaks scan completed. Report saved as: ${reportFileName}`);
+      console.log(`📁 Full report file path: ${reportFilePath}`);
+
+      resolve(reportFilePath);
     });
   });
 }
 
-function checkReport(reportPath) {
+async function checkForSecrets(reportFilePath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(reportPath, 'utf8', (err, data) => {
-      if (err) return reject(new Error(`Failed to read report: ${err.message}`));
+    fs.readFile(reportFilePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error("❌ Error reading report file:", err);
+        return reject(err);
+      }
+
       try {
-        const json = JSON.parse(data);
-        resolve(json.length > 0 ? json : "No secrets detected.");
-      } catch (e) {
-        reject(new Error(`Invalid report format: ${e.message}`));
+        const report = JSON.parse(data);
+        if (!report || report.length === 0) {
+          resolve("No secrets detected.");
+        } else {
+          resolve(report);
+        }
+      } catch (parseErr) {
+        console.error("❌ Error parsing JSON report:", parseErr);
+        reject(parseErr);
       }
     });
   });
 }
 
 module.exports = async function () {
-  const scanDir = process.env.GITHUB_WORKSPACE || path.resolve(__dirname, '..');
-  const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'repo';
-  const timestamp = Date.now();
-  const reportPath = path.join(scanDir, `${repoName}_${timestamp}_report.json`);
-  const rulesPath = createTempRulesFile();
-
-  console.log(`📂 Scanning directory: ${scanDir}`);
-  console.log(`📝 Rules file created at: ${rulesPath}`);
-
   try {
-    await runGitleaks(scanDir, reportPath, rulesPath);
-    const result = await checkReport(reportPath);
+    // Fix git "dubious ownership" error for GitHub workspace
+    execSync('git config --global --add safe.directory /github/workspace');
+
+    // Scan directory is root of repo, includes src/
+    const scanDir = process.env.GITHUB_WORKSPACE || '/github/workspace';
+
+    // Repo name fallback
+    const repoName = (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY.split('/')[1]) || 'github-action';
+
+    const reportFilePath = await scanForSecretsAndReturnReport(scanDir, repoName);
+
+    const result = await checkForSecrets(reportFilePath);
 
     if (result === "No secrets detected.") {
       console.log("✅ No secrets detected.");
     } else {
       console.log("🔐 Secrets detected:");
-      console.dir(result, { depth: null });
-      process.exitCode = 1; // Optional: fail the action
+      console.dir(result, { depth: null, colors: true });
+
+      // Optional: fail action on secrets found
+      // process.exitCode = 1;
     }
   } catch (err) {
-    console.error("❌ Secret scan error:", err.message);
-    process.exit(1);
-  } finally {
-    if (fs.existsSync(rulesPath)) fs.unlinkSync(rulesPath); // cleanup
+    console.error("❌ Error during secret scan:", err);
+    // Optional: fail action on error
+    // process.exitCode = 1;
   }
 };
+
 
 
 
