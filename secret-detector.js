@@ -1,58 +1,89 @@
 const { exec, execSync } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
-async function scanForSecretsAndReturnReport(scanDir, repoName) {
+// ⚠️ Powerful custom rules to detect many secret types
+const customRules = `
+[[rules]]
+id = "generic-password"
+description = "Generic password assignment"
+regex = '''(?i)(password|passwd|pwd|secret|key|token|auth|access)[\\s"']*[=:][\\s"']*([A-Za-z0-9@#\\-_$%!]{6,})'''
+tags = ["key", "secret", "generic", "password"]
+
+[[rules]]
+id = "aws-secret"
+description = "AWS Secret Access Key"
+regex = '''(?i)aws(.{0,20})?(secret|access)?(.{0,20})?['"][0-9a-zA-Z/+]{40}['"]'''
+tags = ["aws", "key", "secret"]
+
+[[rules]]
+id = "aws-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[A-Za-z0-9_]{36}'''
+tags = ["github", "token"]
+
+[[rules]]
+id = "jwt"
+description = "JSON Web Token"
+regex = '''eyJ[A-Za-z0-9-_]+\\.eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+'''
+tags = ["token", "jwt"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook URL"
+regex = '''https://hooks.slack.com/services/T[a-zA-Z0-9]+/B[a-zA-Z0-9]+/[a-zA-Z0-9]+'''
+tags = ["slack", "webhook"]
+
+[[rules]]
+id = "firebase-api-key"
+description = "Firebase API Key"
+regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+tags = ["firebase", "apikey"]
+
+[[rules]]
+id = "bearer-token"
+description = "Bearer token in headers or configs"
+regex = '''(?i)(bearer)[\\s:]*[A-Za-z0-9\\-_\\.=]+'''
+tags = ["token", "auth"]
+`;
+
+function createTempRulesFile() {
+  const rulesPath = path.join(os.tmpdir(), 'gitleaks-custom-rules.toml');
+  fs.writeFileSync(rulesPath, customRules);
+  return rulesPath;
+}
+
+function runGitleaks(scanDir, reportPath, rulesPath) {
   return new Promise((resolve, reject) => {
-    const timestamp = Date.now();
-    const reportFileName = `${repoName}_${timestamp}_report.json`;
-    const reportFilePath = path.resolve(scanDir, reportFileName);
-
-    // Prepare gitleaks command
-    // Using detect mode, specify source dir, output report, no banner
-    const command = `gitleaks detect --source=${scanDir} --report-path=${reportFilePath} --no-banner`;
-
-    console.log(`📂 Scanning directory: ${scanDir}`);
-    console.log(`📝 Rules file: (default built-in)`);
+    const command = `gitleaks detect --source=${scanDir} --report-path=${reportPath} --config=${rulesPath} --no-banner`;
     console.log(`🔍 Running Gitleaks:\n${command}`);
-
     exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
       console.log('📤 Gitleaks STDOUT:\n', stdout);
-      if (stderr && stderr.trim().length > 0) {
+      if (stderr && stderr.trim()) {
         console.warn('⚠️ Gitleaks STDERR:\n', stderr);
       }
-
-      if (error) {
-        console.error('❌ Gitleaks execution error:', error);
-        return reject(error);
-      }
-
-      console.log(`✅ Gitleaks scan completed. Report saved as: ${reportFileName}`);
-      console.log(`📁 Full report file path: ${reportFilePath}`);
-
-      resolve(reportFilePath);
+      if (error) return reject(error);
+      resolve();
     });
   });
 }
 
-async function checkForSecrets(reportFilePath) {
+function checkReport(reportPath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(reportFilePath, 'utf8', (err, data) => {
-      if (err) {
-        console.error("❌ Error reading report file:", err);
-        return reject(err);
-      }
-
+    fs.readFile(reportPath, 'utf8', (err, data) => {
+      if (err) return reject(err);
       try {
         const report = JSON.parse(data);
-        if (!report || report.length === 0) {
-          resolve("No secrets detected.");
-        } else {
-          resolve(report);
-        }
-      } catch (parseErr) {
-        console.error("❌ Error parsing JSON report:", parseErr);
-        reject(parseErr);
+        resolve(report.length ? report : "No secrets detected.");
+      } catch (e) {
+        reject(new Error("Invalid JSON in gitleaks report."));
       }
     });
   });
@@ -60,34 +91,34 @@ async function checkForSecrets(reportFilePath) {
 
 module.exports = async function () {
   try {
-    // Fix git "dubious ownership" error for GitHub workspace
     execSync('git config --global --add safe.directory /github/workspace');
 
-    // Scan directory is root of repo, includes src/
     const scanDir = process.env.GITHUB_WORKSPACE || '/github/workspace';
+    const repoName = (process.env.GITHUB_REPOSITORY || 'repo/unknown').split('/')[1];
+    const reportPath = path.join(scanDir, `${repoName}_${Date.now()}_report.json`);
+    const rulesPath = createTempRulesFile();
 
-    // Repo name fallback
-    const repoName = (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY.split('/')[1]) || 'github-action';
+    console.log(`📂 Scanning directory: ${scanDir}`);
+    console.log(`📝 Using custom inline rules from: ${rulesPath}`);
 
-    const reportFilePath = await scanForSecretsAndReturnReport(scanDir, repoName);
-
-    const result = await checkForSecrets(reportFilePath);
+    await runGitleaks(scanDir, reportPath, rulesPath);
+    const result = await checkReport(reportPath);
 
     if (result === "No secrets detected.") {
       console.log("✅ No secrets detected.");
     } else {
       console.log("🔐 Secrets detected:");
       console.dir(result, { depth: null, colors: true });
-
-      // Optional: fail action on secrets found
-      // process.exitCode = 1;
+      process.exitCode = 1; // Mark the GitHub Action as failed
     }
+
+    fs.unlinkSync(rulesPath); // Clean up
   } catch (err) {
-    console.error("❌ Error during secret scan:", err);
-    // Optional: fail action on error
-    // process.exitCode = 1;
+    console.error("❌ Error during secret scan:", err.message);
+    process.exit(1);
   }
 };
+
 
 
 
