@@ -2,6 +2,16 @@ const { exec } = require('child_process');
 const fs = require('fs');  // To read the generated report file
 const path = require('path');
 
+const printDirectoryContents = async (dir) => {
+  try {
+    const files = await fs.promises.readdir(dir);
+    console.log(`📁 Files in ${dir}:`);
+    files.forEach(file => console.log(` - ${file}`));
+  } catch (err) {
+    console.error(`❌ Error reading directory ${dir}:`, err.message);
+  }
+};
+
 // Function to scan for secrets
 function scanForSecretsAndReturnReport(scanDir, repoName) {
     return new Promise((resolve, reject) => {
@@ -10,7 +20,8 @@ function scanForSecretsAndReturnReport(scanDir, repoName) {
         const reportFilePath = path.resolve(scanDir, reportFileName);
 
         // Run the gitleaks command
-        const command = `gitleaks dir ${scanDir} -r ${reportFileName} --no-banner`;
+        // const command = `gitleaks dir ${scanDir} -r ${reportFileName} --no-banner`;
+        const command = `gitleaks dir ${scanDir} -r ${reportFilePath} --no-banner`;
 
         console.log(`🔍 Running gitleaks command: ${command}`);
         exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
