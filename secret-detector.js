@@ -65,6 +65,9 @@ module.exports = async function () {
     const repoName = process.env.GITHUB_REPOSITORY.split('/')[1] || 'github-action'; // Get repo name dynamically
 
     try {
+         console.log("📂 GITHUB_WORKSPACE directory:", scanDir);
+    await printDirectoryContents(scanDir);
+    
         // Run the scan
         const reportFilePath = await scanForSecretsAndReturnReport(scanDir, repoName);
         console.log("repo name", repoName);
