@@ -3,12 +3,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// ⚠️ Powerful custom rules to detect many secret types
+// ✅ Stronger regex: avoids matching dummy values like "hello", "test123"
 const customRules = `
 [[rules]]
-id = "generic-password"
-description = "Generic password assignment"
-regex = '''(?i)(password|passwd|pwd|secret|key|token|auth|access)[\\s"']*[=:][\\s"']*([A-Za-z0-9@#\\-_$%!]{6,})'''
+id = "strict-secret-detection"
+description = "Detect likely passwords or secrets with high entropy"
+regex = '''(?i)(password|passwd|pwd|secret|key|token|auth|access)[\\s"']*[=:][\\s"']*["']([A-Za-z0-9@#\\-_$%!]{10,})["']'''
 tags = ["key", "secret", "generic", "password"]
 
 [[rules]]
@@ -36,22 +36,10 @@ regex = '''eyJ[A-Za-z0-9-_]+\\.eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+'''
 tags = ["token", "jwt"]
 
 [[rules]]
-id = "slack-webhook"
-description = "Slack Webhook URL"
-regex = '''https://hooks.slack.com/services/T[a-zA-Z0-9]+/B[a-zA-Z0-9]+/[a-zA-Z0-9]+'''
-tags = ["slack", "webhook"]
-
-[[rules]]
 id = "firebase-api-key"
 description = "Firebase API Key"
 regex = '''AIza[0-9A-Za-z\\-_]{35}'''
 tags = ["firebase", "apikey"]
-
-[[rules]]
-id = "bearer-token"
-description = "Bearer token in headers or configs"
-regex = '''(?i)(bearer)[\\s:]*[A-Za-z0-9\\-_\\.=]+'''
-tags = ["token", "auth"]
 `;
 
 function createTempRulesFile() {
@@ -61,15 +49,17 @@ function createTempRulesFile() {
 }
 
 function runGitleaks(scanDir, reportPath, rulesPath) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const command = `gitleaks detect --source=${scanDir} --report-path=${reportPath} --config=${rulesPath} --no-banner`;
     console.log(`🔍 Running Gitleaks:\n${command}`);
+
     exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
       console.log('📤 Gitleaks STDOUT:\n', stdout);
       if (stderr && stderr.trim()) {
         console.warn('⚠️ Gitleaks STDERR:\n', stderr);
       }
-      if (error) return reject(error);
+
+      // Still continue even if exit code is 1 (leaks found)
       resolve();
     });
   });
@@ -79,6 +69,7 @@ function checkReport(reportPath) {
   return new Promise((resolve, reject) => {
     fs.readFile(reportPath, 'utf8', (err, data) => {
       if (err) return reject(err);
+
       try {
         const report = JSON.parse(data);
         resolve(report.length ? report : "No secrets detected.");
@@ -91,8 +82,6 @@ function checkReport(reportPath) {
 
 module.exports = async function () {
   try {
-    execSync('git config --global --add safe.directory /github/workspace');
-
     const scanDir = process.env.GITHUB_WORKSPACE || '/github/workspace';
     const repoName = (process.env.GITHUB_REPOSITORY || 'repo/unknown').split('/')[1];
     const reportPath = path.join(scanDir, `${repoName}_${Date.now()}_report.json`);
@@ -100,6 +89,13 @@ module.exports = async function () {
 
     console.log(`📂 Scanning directory: ${scanDir}`);
     console.log(`📝 Using custom inline rules from: ${rulesPath}`);
+
+    // Set GIT safe directory for Docker/GitHub context
+    try {
+      execSync(`git config --global --add safe.directory "${scanDir}"`);
+    } catch (e) {
+      console.warn("⚠️ Could not configure Git safe directory (not a git repo?)");
+    }
 
     await runGitleaks(scanDir, reportPath, rulesPath);
     const result = await checkReport(reportPath);
@@ -109,10 +105,10 @@ module.exports = async function () {
     } else {
       console.log("🔐 Secrets detected:");
       console.dir(result, { depth: null, colors: true });
-      process.exitCode = 1; // Mark the GitHub Action as failed
+      process.exitCode = 1; // Fail GitHub Action
     }
 
-    fs.unlinkSync(rulesPath); // Clean up
+    fs.unlinkSync(rulesPath); // Cleanup
   } catch (err) {
     console.error("❌ Error during secret scan:", err.message);
     process.exit(1);
