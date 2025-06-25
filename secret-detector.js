@@ -25,6 +25,10 @@ function scanForSecretsAndReturnReport(scanDir, repoName) {
 
         console.log(`🔍 Running gitleaks command: ${command}`);
         exec(command, { shell: '/bin/bash' }, (error, stdout, stderr) => {
+             console.log(`📤 Gitleaks STDOUT:\n${stdout}`);
+  if (stderr) {
+    console.log(`⚠️ Gitleaks STDERR:\n${stderr}`);
+  }
             if (error) {
                 console.error(`❌ Error executing gitleaks: ${stderr}`);
                 return reject(error);
@@ -67,7 +71,7 @@ module.exports = async function () {
     try {
          console.log("📂 GITHUB_WORKSPACE directory:", scanDir);
     await printDirectoryContents(scanDir);
-    
+
         // Run the scan
         const reportFilePath = await scanForSecretsAndReturnReport(scanDir, repoName);
         console.log("repo name", repoName);
