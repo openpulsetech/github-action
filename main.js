@@ -6,7 +6,7 @@ const core = require('@actions/core');
 
     // Fetch the input scan types (could be 'secrets', 'sca', or 'configs')
     const scanTypes = core.getInput('scan_types').split(','); // Example: ["secrets", "sca", "configs"]
-
+    console.log("scan types", scanTypes);
     if(scanTypes.includes('sca') && scanTypes.includes('secrets')){
       console.log("All types available");
       await require('./sbom')();
