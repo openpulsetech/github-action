@@ -6,25 +6,28 @@ const core = require('@actions/core');
 
     // Fetch the input scan types (could be 'secrets', 'sca', or 'configs')
     const scanTypes = core.getInput('scan_types').split(','); // Example: ["secrets", "sca", "configs"]
-    console.log("scan types", scanTypes);
-    if(scanTypes.includes('sca') && scanTypes.includes('secrets')){
-      console.log("All types available");
+    console.log("Scan types:", scanTypes);
+
+    // Check if both 'sca' and 'secrets' are in the scanTypes
+    if (scanTypes.includes('sca') && scanTypes.includes('secrets')) {
+      console.log("🔍 Running both SBOM (SCA) and Secret Detector...");
       await require('./sbom')();
-      await require('./secret-detector')(); 
-    }
-    // If 'sca' is in scanTypes, run the SBOM (SCA) scanner
-    if (scanTypes.includes('sca')) {
-      console.log("🔍 Running SBOM (SCA) Scanner...");
-      await require('./sbom')(); // Run SBOM or SCA tool
+      await require('./secret-detector')();
+    } else {
+      // If 'sca' is in scanTypes, run the SBOM (SCA) scanner
+      if (scanTypes.includes('sca')) {
+        console.log("🔍 Running SBOM (SCA) Scanner...");
+        await require('./sbom')(); // Run SBOM or SCA tool
+      }
+
+      // If 'secrets' is in scanTypes, run the Secret Detector
+      if (scanTypes.includes('secrets')) {
+        console.log("🔍 Running Secret Detector...");
+        await require('./secret-detector')(); // Run secret detector (e.g., Gitleaks)
+      }
     }
 
-     // If 'secrets' is in scanTypes, run the Secret Detector
-    if (scanTypes.includes('secrets')) {
-      console.log("🔍 Running Secret Detector...");
-      await require('./secret-detector')(); // Run secret detector (e.g., Gitleaks)
-    }
-
-    // If 'configs' is in scanTypes, run the Config Scanner
+    // If 'configs' is in scanTypes, run the Config Scanner (if this feature is added later)
     // if (scanTypes.includes('configs')) {
     //   console.log("🔍 Running Config Scanner...");
     //   await require('./config-scanner')(); // Replace with your config scanner
@@ -32,7 +35,7 @@ const core = require('@actions/core');
 
     console.log("✅ Main process completed.");
   } catch (err) {
-    console.error("❌ Error in main.js:", err.message);
+    console.error("❌ Error in main.js:", err); // Log the entire error object for better debugging
     process.exit(1); // Exit with error code
   }
 })();
