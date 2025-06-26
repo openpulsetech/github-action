@@ -7,6 +7,11 @@ const core = require('@actions/core');
     // Fetch the input scan types (could be 'secrets', 'sca', or 'configs')
     const scanTypes = core.getInput('scan_types').split(','); // Example: ["secrets", "sca", "configs"]
 
+    if(scanTypes.includes('sca') && scanTypes.includes('secrets')){
+      console.log("All types available");
+      await require('./sbom')();
+      await require('./secret-detector')(); 
+    }
     // If 'sca' is in scanTypes, run the SBOM (SCA) scanner
     if (scanTypes.includes('sca')) {
       console.log("🔍 Running SBOM (SCA) Scanner...");
@@ -18,7 +23,7 @@ const core = require('@actions/core');
       console.log("🔍 Running Secret Detector...");
       await require('./secret-detector')(); // Run secret detector (e.g., Gitleaks)
     }
-    
+
     // If 'configs' is in scanTypes, run the Config Scanner
     // if (scanTypes.includes('configs')) {
     //   console.log("🔍 Running Config Scanner...");
