@@ -2,10 +2,14 @@ name: 'SBOM Uploader'
 description: 'Generates and uploads SBOM'
 author: 'Neo'
 inputs:
-  who-to-greet:
-    description: 'Optional greeting'
+  scan_types:
+    description: "Comma-separated list of scan types (e.g. secrets, sca, configs)"
     required: false
-    default: 'world'
+    default: "sca"
+  # failure_level:
+  #   description: "Severity levels to fail on (e.g. CRITICAL,HIGH,MEDIUM,ALL)"
+  #   required: false
+  #   default: "CRITICAL"
 runs:
   using: 'docker'
   image: 'Dockerfile'
