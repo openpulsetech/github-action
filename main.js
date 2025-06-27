@@ -27,6 +27,9 @@ const core = require('@actions/core');
     //   await require('./config-scanner')(); // Replace with your config scanner
     // }
 
+    const branchName = process.env.GITHUB_REF_NAME;
+    console.log("Branch name:", branchName);
+
     console.log("✅ Main process completed.");
   } catch (err) {
     console.error("❌ Error in main.js:", err); // Log the entire error object for better debugging
