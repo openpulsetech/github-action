@@ -5,10 +5,10 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
-const projectId = 'd0b69d2c-2aed-455a-a0e8-6ba8ae516c58';
-const apiKey = '0a4b5065-1a73-45bf-aef3-eb4f14e94fdc';
+const projectId = '88050909-d4f0-4138-af6f-ade143d38ce6';
+const apiKey = '450563d1-8431-444a-b372-c5b26201b5ff';
 const secretKey = 'q3Y2mjMh2-Vd67Z3j0y0D0nwoA-vAUbYwBT-HW5Z34Y';
-const tenantKey = '4fbcdc76-6d31-4094-b630-7852ca7ea654';
+const tenantKey = '01b76144-284d-4412-91a8-c4682cd98c5d';
 const apiUrl = 'https://beta.neotrak.io/open-pulse/project/update-with-file';
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"];
