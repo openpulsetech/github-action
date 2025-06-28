@@ -1,4 +1,4 @@
-FROM prabhushan/sbom-base:1.0.2
+FROM prabhushan/sbom-base:1.0.4
 
 RUN apk add --no-cache nodejs npm jq
 
@@ -16,4 +16,3 @@ RUN npm install
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-
