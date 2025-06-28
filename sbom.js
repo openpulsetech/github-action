@@ -5,24 +5,19 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
-const projectId = process.env.PROJECT_ID;
-const secretKey = process.env.SECRET_KEY;
-const apiUrl = 'http://64.227.149.25:8081/api/v1/bom';
+const projectId = 'd0b69d2c-2aed-455a-a0e8-6ba8ae516c58';
+const apiKey = '0a4b5065-1a73-45bf-aef3-eb4f14e94fdc';
+const secretKey = 'thCw4elM2fYexbx+T2myC+lWFLeiv03abG0wUolZiBgaolc4ECPfWQ3S08Ko2sKnzIfJWCInN5u+uKW83o+ERc3T89M0hulT8zUttLx6l7Y=';
+const tenantKey = '4fbcdc76-6d31-4094-b630-7852ca7ea654';
+const apiUrl = 'http://dev.neotrak.io/open-pulse/project/update-with-file';
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"];
 
 
 async function uploadSBOM() {
-  // Validate environment variables
-  if (!projectId || !secretKey) {
-    console.error('❌ PROJECT_ID or SECRET_KEY environment variables are missing.');
-    process.exit(1);
-  }
-
-  // Run cdxgen command
+  // Run cdxgen command to generate SBOM
   const child = spawn('cdxgen', [projectPath, '-o', '/github/workspace/sbom-new.json']);
 
-  // Handle child process output and errors
   child.stdout.on('data', (data) => {
     console.log(`Stdout: ${data}`);
   });
@@ -31,7 +26,6 @@ async function uploadSBOM() {
     console.error(`Stderr: ${data}`);
   });
 
-  // Wait for child process to complete
   await new Promise((resolve, reject) => {
     child.on('exit', (code) => {
       if (code === 0) {
@@ -48,30 +42,28 @@ async function uploadSBOM() {
     await fsPromises.access(sbomPath);
     console.log(`✅ SBOM file found at ${sbomPath}`);
 
-    // Read file (optional, for logging purposes)
-    const sbomContent = await fsPromises.readFile(sbomPath, 'utf8');
-    console.log('SBOM content:', sbomContent);
-
     // Prepare form data for API upload
     const form = new FormData();
-    form.append('project', projectId);
-    form.append('bom', fs.createReadStream(sbomPath)); // Use standard fs for createReadStream
+    form.append('projectId', projectId);
+    form.append('sbomFile', fs.createReadStream(sbomPath));
+    form.append('displayName', 'sbom');
 
-    console.log('📤 Uploading SBOM to API...');
+    console.log('📤 Uploading SBOM to new API...');
 
-    // Upload to API
+    // Upload to new API
     const response = await axios.post(apiUrl, form, {
       headers: {
         ...form.getHeaders(),
-        'x-api-key': secretKey,
+        'x-api-key': apiKey,
+        'x-secret-key': secretKey,
+        'x-tenant-key': tenantKey,
       },
     });
 
     console.log('✅ SBOM uploaded successfully:', response.data);
-    // process.exit(0); // Success
   } catch (err) {
     console.error('❌ Failed to process or upload SBOM:', err.message);
-    process.exit(1); // Failure
+    process.exit(1);
   }
 }
 
