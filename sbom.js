@@ -58,11 +58,22 @@ async function uploadSBOM() {
         'x-secret-key': secretKey,
         'x-tenant-key': tenantKey,
       },
+      validateStatus: () => true // Always resolve, so we can print error body
     });
 
-    console.log('✅ SBOM uploaded successfully:', response.data);
+    if (response.status >= 200 && response.status < 300) {
+      console.log('✅ SBOM uploaded successfully:', response.data);
+    } else {
+      console.error('❌ Failed to upload SBOM. Status:', response.status);
+      console.error('Response body:', response.data);
+      process.exit(1);
+    }
   } catch (err) {
-    console.error('❌ Failed to process or upload SBOM:', err.message);
+    if (err.response) {
+      console.error('❌ Error response from server:', err.response.status, err.response.data);
+    } else {
+      console.error('❌ Failed to process or upload SBOM:', err.message);
+    }
     process.exit(1);
   }
 }
