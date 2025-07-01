@@ -63,6 +63,8 @@ async function uploadSBOM() {
 
     if (!workspaceId || !projectId) {
       console.error('❌ WORKSPACE_ID or PROJECT_ID environment variables are missing.');
+      console.log('WORKSPACE_ID:', workspaceId, 'PROJECT_ID:', projectId);
+      console.log('All env:', process.env);
       process.exit(1);
     }
 
