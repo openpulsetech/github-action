@@ -5,11 +5,13 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
-const projectId = '88050909-d4f0-4138-af6f-ade143d38ce6';
-const apiKey = '450563d1-8431-444a-b372-c5b26201b5ff';
-const secretKey = 'q3Y2mjMh2-Vd67Z3j0y0D0nwoA-vAUbYwBT-HW5Z34Y';
-const tenantKey = '01b76144-284d-4412-91a8-c4682cd98c5d';
-const apiUrl = 'https://beta.neotrak.io/open-pulse/project/update-with-file';
+const workspaceId = process.env.WORKSPACE_ID;
+const projectId = process.env.PROJECT_ID;
+const apiUrlBase = process.env.API_URL_BASE || 'http://localhost:4444/open-pulse/project';
+
+const apiKey = process.env.X_API_KEY;
+const secretKey = process.env.X_SECRET_KEY;
+const tenantKey = process.env.X_TENANT_KEY;
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"];
 
@@ -44,20 +46,41 @@ async function uploadSBOM() {
 
     // Prepare form data for API upload
     const form = new FormData();
-    form.append('projectId', projectId);
     form.append('sbomFile', fs.createReadStream(sbomPath));
-    form.append('displayName', 'sbom');
+    form.append('displayName', process.env.DISPLAY_NAME || 'sbom');
 
-    console.log('📤 Uploading SBOM to new API...');
+    // Get branch name from GitHub Actions or local git
+    let branchName = process.env.GITHUB_REF_NAME;
+    if (!branchName) {
+      try {
+        const { execSync } = require('child_process');
+        branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+      } catch (e) {
+        branchName = 'main';
+      }
+    }
+    form.append('branchName', branchName);
 
-    // Upload to new API
+    if (!workspaceId || !projectId) {
+      console.error('❌ WORKSPACE_ID or PROJECT_ID environment variables are missing.');
+      process.exit(1);
+    }
+
+    const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-secrets`;
+    console.log('📤 Uploading SBOM to API:', apiUrl);
+
+    // Upload to API
+
+    // Prepare headers from environment variables
+    const headers = {
+      ...form.getHeaders(),
+    };
+    if (apiKey) headers['x-api-key'] = apiKey;
+    if (secretKey) headers['x-secret-key'] = secretKey;
+    if (tenantKey) headers['x-tenant-key'] = tenantKey;
+
     const response = await axios.post(apiUrl, form, {
-      headers: {
-        ...form.getHeaders(),
-        'x-api-key': apiKey,
-        'x-secret-key': secretKey,
-        'x-tenant-key': tenantKey,
-      },
+      headers,
       validateStatus: () => true // Always resolve, so we can print error body
     });
 
