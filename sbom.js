@@ -67,7 +67,8 @@ async function uploadSBOM() {
       process.exit(1);
     }
     console.log("Env Variables:", {
-      WORKSPACE_ID: process.env.WORKSPACE_ID,
+      WORKSPACE_ID: process.env.WORKSPACE_ID?.substring(0, 6),
+       WORKSPACE_IDLength: process.env.WORKSPACE_ID?.length,
       PROJECT_ID: process.env.PROJECT_ID,
       API_URL_BASE: process.env.API_URL_BASE,
       X_API_KEY: process.env.X_API_KEY,
