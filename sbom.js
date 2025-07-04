@@ -27,9 +27,6 @@ async function uploadSBOM() {
     console.error(`Stderr: ${data}`);
   });
 
-  const stat = await fsPromises.stat(sbomPath);
-  console.log('📄 SBOM file size:', stat.size, 'bytes');
-
   await new Promise((resolve, reject) => {
     child.on('exit', (code) => {
       if (code === 0) {
@@ -69,14 +66,14 @@ async function uploadSBOM() {
       console.log('All env:', process.env);
       process.exit(1);
     }
-console.log("Env Variables:", {
-  WORKSPACE_ID: process.env.WORKSPACE_ID,
-  PROJECT_ID: process.env.PROJECT_ID,
-  API_URL_BASE: process.env.API_URL_BASE,
-  X_API_KEY: process.env.X_API_KEY,
-  X_SECRET_KEY: process.env.X_SECRET_KEY,
-  X_TENANT_KEY: process.env.X_TENANT_KEY
-});
+    console.log("Env Variables:", {
+      WORKSPACE_ID: process.env.WORKSPACE_ID,
+      PROJECT_ID: process.env.PROJECT_ID,
+      API_URL_BASE: process.env.API_URL_BASE,
+      X_API_KEY: process.env.X_API_KEY,
+      X_SECRET_KEY: process.env.X_SECRET_KEY,
+      X_TENANT_KEY: process.env.X_TENANT_KEY
+    });
 
 
     const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-secrets`;
