@@ -37,7 +37,6 @@ async function uploadSBOM() {
       }
     });
   });
-
   try {
     // Check if SBOM file exists
     await fsPromises.access(sbomPath);
