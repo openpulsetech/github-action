@@ -7,7 +7,7 @@ const FormData = require('form-data');
 
 const workspaceId = process.env.WORKSPACE_ID;
 const projectId = process.env.PROJECT_ID;
-const apiUrlBase = process.env.API_URL_BASE || 'http://localhost:4444/open-pulse/project';
+const apiUrlBase = process.env.API_URL_BASE || 'http://dev.neotrak.io/open-pulse/project';
 
 const apiKey = process.env.X_API_KEY;
 const secretKey = process.env.X_SECRET_KEY;
