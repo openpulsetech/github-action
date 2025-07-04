@@ -66,6 +66,14 @@ async function uploadSBOM() {
       console.log('All env:', process.env);
       process.exit(1);
     }
+console.log('Env Variables:', {
+  WORKSPACE_ID: workspaceId,
+  PROJECT_ID: projectId,
+  API_URL_BASE: apiUrlBase,
+  X_API_KEY: apiKey,
+  X_SECRET_KEY: secretKey,
+  X_TENANT_KEY: tenantKey
+});
 
     const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-secrets`;
     console.log('📤 Uploading SBOM to API:', apiUrl);
