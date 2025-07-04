@@ -5,17 +5,13 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
-// const workspaceId = process.env.WORKSPACE_ID;
-// const projectId = process.env.PROJECT_ID;
-const workspaceId = '30fd43a7-5ff4-428f-b273-4efc543f012f';
-const projectId = '01cdf5bc-0285-4b88-a38e-999bc4022923';
+const workspaceId = process.env.WORKSPACE_ID;
+const projectId = process.env.PROJECT_ID;
 const apiUrlBase = 'http://dev.neotrak.io/open-pulse/project';
-const apiKey = '44cad159-43ae-4463-a1ef-d5aa0e0dab2a';
-const secretKey = 'Nz4swWDo4EtFcsFlElHdE2X8olTUIWd5QWkYHzd4sPQ';
-const tenantKey = '25099443-8afb-40c5-bc38-3b0c3af52b45';
-// const apiKey = process.env.X_API_KEY;
-// const secretKey = process.env.X_SECRET_KEY;
-// const tenantKey = process.env.X_TENANT_KEY;
+
+const apiKey = process.env.X_API_KEY;
+const secretKey = process.env.X_SECRET_KEY;
+const tenantKey = process.env.X_TENANT_KEY;
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"];
 
@@ -81,7 +77,7 @@ async function uploadSBOM() {
     });
 
 
-    const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-secrets`;
+    const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-sbom`;
     console.log('📤 Uploading SBOM to API:', apiUrl);
 
     // Set headers
