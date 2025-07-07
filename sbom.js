@@ -12,8 +12,10 @@ const secretKey = process.env.X_SECRET_KEY;
 const tenantKey = process.env.X_TENANT_KEY;
 
 const apiUrlBase = 'http://dev.neotrak.io/open-pulse/project';
-const sbomPath = path.resolve('/github/workspace/sbom-new.json');
-const projectPath = process.env["GITHUB_WORKSPACE"];
+// const sbomPath = path.resolve('/github/workspace/sbom-new.json');
+// const projectPath = process.env["GITHUB_WORKSPACE"];
+const projectPath = '/app';
+const sbomPath = path.resolve('/app/sbom-new.json');
 
 async function uploadSBOM() {
   // Run cdxgen command to generate SBOM
