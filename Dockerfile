@@ -2,6 +2,9 @@ FROM prabhushan/sbom-base:1.0.4
 
 RUN apk add --no-cache nodejs npm jq
 
+# Install yarn using npm
+RUN npm install -g yarn
+
 WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
