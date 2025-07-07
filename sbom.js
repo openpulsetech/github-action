@@ -17,7 +17,8 @@ const projectPath = process.env["GITHUB_WORKSPACE"];
 
 async function uploadSBOM() {
   // Run cdxgen command to generate SBOM
-  const child = spawn('cdxgen', [projectPath, '-o', sbomPath]);
+  // const child = spawn('cdxgen', [projectPath, '-o', sbomPath]);
+  const child = spawn('cdxgen', [projectPath, '-o', sbomPath, '--type', 'nodejs']);
 
   child.stdout.on('data', (data) => {
     console.log(`Stdout: ${data}`);
@@ -41,6 +42,9 @@ async function uploadSBOM() {
     // Check if SBOM file exists
     await fsPromises.access(sbomPath);
     console.log(`✅ SBOM file found at ${sbomPath}`);
+
+    const sbomData = await fsPromises.readFile(sbomPath, 'utf8');
+    console.log('📄 SBOM Content:\n', sbomData);
 
     // Prepare form data
     const form = new FormData();
