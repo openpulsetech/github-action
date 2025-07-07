@@ -16,11 +16,31 @@ const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"];
 console.log('Project Path:', projectPath);
 
+function printDirStructure(dir, level = 0) {
+  if (level >= 3) return; // Limit to 3 levels
+
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+
+  files.forEach(file => {
+    const fullPath = path.join(dir, file.name);
+    if (file.isDirectory()) {
+      console.log('📁', fullPath);  // Print directory
+      printDirStructure(fullPath, level + 1); // Recursively print subdirectories (up to 3 levels)
+    } else {
+      console.log('📄', fullPath);  // Print file
+    }
+  });
+}
+
+// Print the directory structure of the external project
+console.log('🔍 Project Directory Structure:');
+printDirStructure(projectPath);
+
 async function uploadSBOM() {
   // Run cdxgen command to generate SBOM
   // const child = spawn('cdxgen', [projectPath, '-o', sbomPath]);
  const child = spawn('cdxgen', [projectPath, '-o', sbomPath, '--type', 'nodejs']); 
- 
+
   child.stdout.on('data', (data) => {
     console.log(`Stdout: ${data}`);
   });
