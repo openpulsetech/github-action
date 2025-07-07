@@ -48,6 +48,10 @@ async function uploadSBOM() {
     process.exit(1);
   }
 
+   // Read and print the content of package.json
+  const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
+  console.log('📄 package.json Content:', packageJsonContent);
+  
   // Run cdxgen to generate the SBOM for the Node.js project
   const child = spawn('cdxgen', [projectPath, '-o', sbomPath, '--type', 'nodejs']); 
 
@@ -77,7 +81,7 @@ async function uploadSBOM() {
 
      const sbomContent = fs.readFileSync(sbomPath, 'utf8');
     console.log('📄 SBOM Content:', sbomContent);
-    
+
     // Prepare form data for upload
     const form = new FormData();
     form.append('sbomFile', fs.createReadStream(sbomPath));
