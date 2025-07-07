@@ -14,22 +14,20 @@ const apiKey = process.env.X_API_KEY;
 const secretKey = process.env.X_SECRET_KEY;
 const tenantKey = process.env.X_TENANT_KEY;
 
-async function findPackageJsonDirs(basePath) {
-  console.log(`🔍 Looking for package.json inside: ${basePath}`);
-  try {
-    const { stdout } = await exec(`find ${basePath} -type f -name package.json`);
-    const paths = stdout.trim().split('\n').filter(Boolean);
-    console.log('📦 Found package.json at:\n', paths.join('\n'));
-    return paths.map(p => path.dirname(p));
-  } catch (err) {
-    console.error('❌ Failed to find package.json:', err.message);
-    return [];
-  }
+function printTopLevelDir(dir = '/app') {
+  const items = fs.readdirSync(dir);  // Get the items in the directory
+  items.forEach((item) => {
+    const fullPath = path.join(dir, item);
+    if (fs.statSync(fullPath).isDirectory()) {
+      console.log(`📁 ${item}`);  // If it's a folder, print it with a folder icon
+    } else {
+      console.log(`📄 ${item}`);  // If it's a file, print it with a file icon
+    }
+  });
 }
 
 async function uploadSBOM() {
-  const basePath = '/app';
-  const candidates = await findPackageJsonDirs(basePath);
+  printTopLevelDir('/app');
   if (candidates.length === 0) {
     console.error('❌ No package.json found.');
     process.exit(1);
