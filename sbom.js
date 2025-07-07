@@ -5,6 +5,9 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 const workspaceId = process.env.WORKSPACE_ID;
 const projectId = process.env.PROJECT_ID;
 const apiKey = process.env.X_API_KEY;
@@ -17,9 +20,25 @@ const apiUrlBase = 'http://dev.neotrak.io/open-pulse/project';
 const projectPath = '/app';
 const sbomPath = path.resolve('/app/sbom-new.json');
 
+async function printDirectoryTree(rootPath) {
+  console.log(`🗂️ Printing directory tree under: ${rootPath}`);
+  try {
+    const { stdout, stderr } = await exec(`find ${rootPath}`);
+    if (stderr) {
+      console.error('⚠️ Error while printing directory tree:', stderr);
+    }
+    console.log(stdout);
+  } catch (err) {
+    console.error('❌ Failed to execute find command:', err.message);
+  }
+}
+
 async function uploadSBOM() {
   // Run cdxgen command to generate SBOM
   // const child = spawn('cdxgen', [projectPath, '-o', sbomPath]);
+  await printDirectoryTree(projectPath);
+  console.log(`📂 Project Path: ${projectPath}`);
+  console.log(`📄 SBOM Path: ${sbomPath}`);
   const child = spawn('cdxgen', [projectPath, '-o', sbomPath, '--type', 'nodejs']);
 
   child.stdout.on('data', (data) => {
