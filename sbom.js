@@ -75,6 +75,9 @@ async function uploadSBOM() {
     await fsPromises.access(sbomPath);
     console.log(`✅ SBOM file found at ${sbomPath}`);
 
+     const sbomContent = fs.readFileSync(sbomPath, 'utf8');
+    console.log('📄 SBOM Content:', sbomContent);
+    
     // Prepare form data for upload
     const form = new FormData();
     form.append('sbomFile', fs.createReadStream(sbomPath));
