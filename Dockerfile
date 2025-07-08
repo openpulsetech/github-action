@@ -16,9 +16,6 @@ COPY package.json package-lock.json /app/
 
 RUN npm install
 
-# Install project dependencies using yarn
-# RUN yarn install
-
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
