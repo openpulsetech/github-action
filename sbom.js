@@ -11,7 +11,7 @@ const apiKey = process.env.X_API_KEY;
 const secretKey = process.env.X_SECRET_KEY;
 const tenantKey = process.env.X_TENANT_KEY;
 
-const apiUrlBase = 'http://dev.neotrak.io/open-pulse/project';
+const apiUrlBase = 'https://dev.neotrak.io/open-pulse/project';
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"] || "/github/workspace";
 
