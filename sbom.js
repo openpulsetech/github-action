@@ -17,23 +17,6 @@ const projectPath = process.env["GITHUB_WORKSPACE"] || "/github/workspace";
 
 console.log('Project Path:', projectPath);
 
-function printDirStructure(dir, level = 0) {
-  if (level >= 3) return;
-  const files = fs.readdirSync(dir, { withFileTypes: true });
-  files.forEach(file => {
-    const fullPath = path.join(dir, file.name);
-    if (file.isDirectory()) {
-      console.log('📁', fullPath);
-      printDirStructure(fullPath, level + 1);
-    } else {
-      console.log('📄', fullPath);
-    }
-  });
-}
-
-console.log('🔍 Project Directory Structure:');
-printDirStructure(projectPath);
-
 function hasManifestFile(projectPath) {
   const manifests = [
     'package.json',
