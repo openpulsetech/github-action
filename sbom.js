@@ -77,7 +77,8 @@ async function uploadSBOM() {
     const sbomContent = fs.readFileSync(sbomPath, 'utf8');
     console.log('📄 SBOM Content:', sbomContent);
 
-    const form = new FormData();
+    const form = new FormData({ maxDataSize: 10 * 1024 * 1024 }); // 10MB
+
     form.append('sbomFile', fs.createReadStream(sbomPath));
     form.append('displayName', process.env.DISPLAY_NAME || 'sbom');
 
@@ -107,7 +108,14 @@ async function uploadSBOM() {
     if (secretKey) headers['x-secret-key'] = secretKey;
     if (tenantKey) headers['x-tenant-key'] = tenantKey;
 
-    const response = await axios.post(apiUrl, form, { headers });
+    // const response = await axios.post(apiUrl, form, { headers });
+
+    const response = await axios.post(apiUrl, form, {
+      headers,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      timeout: 60000 // optional: 60s timeout
+    });
 
     if (response.status >= 200 && response.status < 300) {
       console.log('✅ SBOM uploaded successfully:', response.data);
