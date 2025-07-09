@@ -62,7 +62,6 @@ async function uploadSBOM() {
     console.log(`📄 SBOM file size: ${sbomSizeInMB.toFixed(2)} MB`);
 
     const form = new FormData({ maxDataSize: 10 * 1024 * 1024 }); // 10MB
-
     form.append('sbomFile', fs.createReadStream(sbomPath));
     form.append('displayName', process.env.DISPLAY_NAME || 'sbom');
 
@@ -98,7 +97,7 @@ async function uploadSBOM() {
       headers,
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-      timeout: 120000 // optional: 60s timeout
+      timeout: 60000 // optional: 60s timeout
     });
 
     if (response.status >= 200 && response.status < 300) {
