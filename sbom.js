@@ -57,9 +57,9 @@ async function uploadSBOM() {
   try {
     await fsPromises.access(sbomPath);
     console.log(`✅ SBOM file found at ${sbomPath}`);
-    const sbomContent = fs.readFileSync(sbomPath, 'utf8');
-    console.log('📄 SBOM Content:', sbomContent.length / 1024);
-    console.log('📄 SBOM Content in MB:', sbomContent.length / 1024 * 1024);
+     const stats = fs.statSync(sbomPath);
+    const sbomSizeInMB = stats.size / (1024 * 1024); // Convert bytes to MB
+    console.log(`📄 SBOM file size: ${sbomSizeInMB.toFixed(2)} MB`);
 
     const form = new FormData({ maxDataSize: 10 * 1024 * 1024 }); // 10MB
 
