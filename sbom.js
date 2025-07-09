@@ -75,7 +75,7 @@ async function uploadSBOM() {
     await fsPromises.access(sbomPath);
     console.log(`✅ SBOM file found at ${sbomPath}`);
     const sbomContent = fs.readFileSync(sbomPath, 'utf8');
-    console.log('📄 SBOM Content:', sbomContent.length);
+    console.log('📄 SBOM Content:', sbomContent.length / 1024);
 
     const form = new FormData({ maxDataSize: 10 * 1024 * 1024 }); // 10MB
 
