@@ -23,8 +23,8 @@ function logDebug(message) {
   }
 }
 
-function logError(message) {
-  console.error(message);
+function logError(...args) {
+  console.error(...args);
 }
 
 console.log('Project Path:', projectPath);
@@ -43,7 +43,7 @@ function hasManifestFile(projectPath) {
 
 async function uploadSBOM() {
   if (!hasManifestFile(projectPath)) {
-    // console.error('❌ No supported manifest file found in the project.');
+    console.error('❌ No supported manifest file found in the project - console.');
     logError('❌ No supported manifest file found in the project.');
     process.exit(1);
   }
