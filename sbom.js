@@ -15,6 +15,18 @@ const apiUrlBase = 'https://dev.neotrak.io/open-pulse/project';
 const sbomPath = path.resolve('/github/workspace/sbom-new.json');
 const projectPath = process.env["GITHUB_WORKSPACE"] || "/github/workspace";
 
+const isDebugMode = process.env.DEBUG_MODE === 'false';
+
+function logDebug(message) {
+  if (isDebugMode) {
+    console.log(message);
+  }
+}
+
+function logError(...args) {
+  console.error(...args);
+}
+
 console.log('Project Path:', projectPath);
 
 function hasManifestFile(projectPath) {
@@ -31,11 +43,12 @@ function hasManifestFile(projectPath) {
 
 async function uploadSBOM() {
   if (!hasManifestFile(projectPath)) {
-    console.error('❌ No supported manifest file found in the project.');
+    console.error('❌ No supported manifest file found in the project - console.');
+    logError('❌ No supported manifest file found in the project.');
     process.exit(1);
   }
 
-  console.log('🛠️ Supported manifest file found. Running cdxgen...');
+  logDebug('🛠️ Supported manifest file found. Running cdxgen...');
 
   const cdxgenArgs = [projectPath, '-o', sbomPath];
   const child = spawn('cdxgen', cdxgenArgs);
@@ -46,7 +59,7 @@ async function uploadSBOM() {
   await new Promise((resolve, reject) => {
     child.on('exit', (code) => {
       if (code === 0) {
-        console.log('✅ cdxgen completed successfully.');
+        logDebug('✅ cdxgen completed successfully.');
         resolve();
       } else {
         reject(new Error(`cdxgen failed with exit code ${code}`));
@@ -56,10 +69,10 @@ async function uploadSBOM() {
 
   try {
     await fsPromises.access(sbomPath);
-    console.log(`✅ SBOM file found at ${sbomPath}`);
+    logDebug(`✅ SBOM file found at ${sbomPath}`);
      const stats = fs.statSync(sbomPath);
     const sbomSizeInMB = stats.size / (1024 * 1024); // Convert bytes to MB
-    console.log(`📄 SBOM file size: ${sbomSizeInMB.toFixed(2)} MB`);
+    logDebug(`📄 SBOM file size: ${sbomSizeInMB.toFixed(2)} MB`);
 
     const form = new FormData({ maxDataSize: 10 * 1024 * 1024 }); // 10MB
     form.append('sbomFile', fs.createReadStream(sbomPath));
@@ -77,12 +90,12 @@ async function uploadSBOM() {
     form.append('branchName', branchName);
 
     if (!workspaceId || !projectId) {
-      console.error('❌ WORKSPACE_ID or PROJECT_ID environment variables are missing.');
+      logError('❌ WORKSPACE_ID or PROJECT_ID environment variables are missing.');
       process.exit(1);
     }
 
     const apiUrl = `${apiUrlBase}/${workspaceId}/${projectId}/update-sbom`;
-    console.log('📤 Uploading SBOM to API:', apiUrl);
+    logDebug('📤 Uploading SBOM to API:', apiUrl);
 
     const headers = {
       ...form.getHeaders(),
@@ -101,14 +114,14 @@ async function uploadSBOM() {
     });
 
     if (response.status >= 200 && response.status < 300) {
-      console.log('✅ SBOM uploaded successfully:', response.data);
+      logDebug('✅ SBOM uploaded successfully:', response.data);
     } else {
-      console.error('❌ Failed to upload SBOM. Status:', response.status);
-      console.error('Response body:', response.data);
+      logError('❌ Failed to upload SBOM. Status:', response.status);
+      logError('Response body:', response.data);
       process.exit(1);
     }
   } catch (err) {
-    console.error('❌ Failed to process or upload SBOM', err);
+    logError('❌ Failed to process or upload SBOM', err);
     process.exit(1);
   }
 }
