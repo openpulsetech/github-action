@@ -13,20 +13,12 @@ COPY secret-detector.js /app/secret-detector.js
 COPY . /app/
 
 # Conditional npm/yarn install
-# RUN if [ -f /app/package.json ]; then \
-#       echo "📦 Detected package.json, installing dependencies..."; \
-#       npm install && yarn install; \
-#     else \
-#       echo "📦 No package.json found, skipping npm/yarn install."; \
-#     fi
-
-# Conditional npm/yarn install inside the target repo
-# RUN if [ -f /github/workspace/package.json ]; then \
-#       echo "📦 Detected package.json in target repo, installing dependencies..."; \
-#       cd /github/workspace && npm install && yarn install; \
-#     else \
-#       echo "📦 No package.json found in target repo, skipping install."; \
-#     fi
+RUN if [ -f /app/package.json ]; then \
+      echo "📦 Detected package.json, installing dependencies..."; \
+      npm install && yarn install; \
+    else \
+      echo "📦 No package.json found, skipping npm/yarn install."; \
+    fi
 
 # ✅ This now works because entrypoint.sh is already copied
 RUN chmod +x /entrypoint.sh
