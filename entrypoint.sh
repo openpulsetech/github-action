@@ -6,11 +6,11 @@ if [ -f "/github/workspace/package.json" ]; then
   cd /github/workspace
 
   if command -v npm &> /dev/null; then
-    npm install --loglevel=error
+    npm install --silent
   fi
 
   if command -v yarn &> /dev/null; then
-    yarn install --loglevel=error
+    yarn install --silent
   fi
 else
   echo "📦 No package.json found in target repo, skipping install."
