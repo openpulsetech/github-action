@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "👋 Hello $INPUT_WHO_TO_GREET"
-
 if [ -f "/github/workspace/package.json" ]; then
   echo "📦 Detected package.json in target repo, installing dependencies..."
   cd /github/workspace

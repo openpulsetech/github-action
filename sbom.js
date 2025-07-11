@@ -43,7 +43,6 @@ function hasManifestFile(projectPath) {
 
 async function uploadSBOM() {
   if (!hasManifestFile(projectPath)) {
-    console.error('❌ No supported manifest file found in the project - console.');
     logError('❌ No supported manifest file found in the project.');
     process.exit(1);
   }
@@ -53,8 +52,8 @@ async function uploadSBOM() {
   const cdxgenArgs = [projectPath, '-o', sbomPath];
   const child = spawn('cdxgen', cdxgenArgs);
 
-  child.stdout.on('data', (data) => console.log(`cdxgen stdout: ${data}`));
-  child.stderr.on('data', (data) => console.error(`cdxgen stderr: ${data}`));
+  child.stdout.on('data', (data) => logDebug(`cdxgen stdout: ${data}`));
+  child.stderr.on('data', (data) => logError(`cdxgen stderr: ${data}`));
 
   await new Promise((resolve, reject) => {
     child.on('exit', (code) => {
