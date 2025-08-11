@@ -153,7 +153,7 @@ module.exports = async function () {
     const reportPath = path.join(scanDir, `${repoName}_${Date.now()}_report.json`);
     const rulesPath = createTempRulesFile();
 
-    log(`📂 Scanning directory: ${scanDir}`);
+    console.log(`📂 Scanning directory: ${scanDir}`);
     log(`📝 Using custom inline rules from: ${rulesPath}`);
 
     // Set GIT safe directory for Docker/GitHub context

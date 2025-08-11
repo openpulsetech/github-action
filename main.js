@@ -19,6 +19,7 @@ function logDebug(message) {
     // Debug log for checking environment variables and inputs
     logDebug("Debug: GITHUB_REF_NAME = " + process.env.GITHUB_REF_NAME);
     logDebug("Debug: Inputs fetched from GitHub: " + scanTypes);
+    console.log("Debug: Inputs fetched from GitHub:", scanTypes);
 
     // If 'sca' is in scanTypes, run the SBOM (SCA) scanner
     if (scanTypes.includes('sca')) {
