@@ -120,6 +120,21 @@ function mapToSBOMSecret(item) {
   };
 }
 
+// Utility to pad File path with dummy segments
+function fixFilePath(filePath) {
+    if (!filePath) return '/dummy/path/with/missing/segments';
+
+    // Remove empty segments (from leading slashes)
+    let segments = filePath.split('/').filter(Boolean);
+    const requiredSegments = 8;
+
+    while (segments.length < requiredSegments) {
+        segments.unshift('dummy');
+    }
+
+    return '/' + segments.join('/');
+}
+
 async function sendSecretsToApi(projectId, secretItems) {
   const apiUrl = `https://dev.neoTrak.io/open-pulse/project/update-secrets/${projectId}`;
   const secretsData = secretItems.map(mapToSBOMSecret);
