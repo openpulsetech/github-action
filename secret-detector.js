@@ -14,6 +14,15 @@ function warn(...args) {
 function error(...args) {
   console.error(...args);
 }
+const skipFiles = [
+    'package.json',
+    'package-lock.json',
+    'pom.xml',
+    'build.gradle',
+    'requirements.txt',
+    'README.md',
+    '.gitignore'
+];
 
 // ✅ Stronger regex: avoids matching dummy values like "hello", "test123"
 const customRules = `
