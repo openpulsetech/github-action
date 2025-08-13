@@ -102,22 +102,18 @@ function checkReport(reportPath) {
 }
 
 function mapToSBOMSecret(item) {
-  return {
-    secret_id: item.RuleID,
-    description: item.Description,
-    secret_value: item.Secret,
-    file: item.File,
-    start_line: item.StartLine,
-    end_line: item.EndLine,
-    start_column: item.StartColumn,
-    end_column: item.EndColumn,
-    match: item.Match,
-    component: {
-      name: path.basename(item.File),
-      version: "unknown",
-      type: "source-code",
-    },
-  };
+     const fixedFile = fixFilePath(item.File);
+    return {
+        RuleID: item.RuleID,
+        Description: item.Description,
+        File: item.File,
+        Match: item.Match,
+        Secret: item.Secret,
+        StartLine: String(item.StartLine ?? ''),
+        EndLine: String(item.EndLine ?? ''),
+        StartColumn: String(item.StartColumn ?? ''),
+        EndColumn: String(item.EndColumn ?? ''),
+    };
 }
 
 // Utility to pad File path with dummy segments
