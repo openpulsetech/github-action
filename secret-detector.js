@@ -106,7 +106,7 @@ function mapToSBOMSecret(item) {
     return {
         RuleID: item.RuleID,
         Description: item.Description,
-        File: item.File,
+        File: fixedFile,
         Match: item.Match,
         Secret: item.Secret,
         StartLine: String(item.StartLine ?? ''),

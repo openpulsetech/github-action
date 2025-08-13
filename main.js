@@ -36,11 +36,11 @@ function logDebug(message) {
     }
 
     // If 'configs' is in scanTypes, run the Config Scanner (if this feature is added later)
-    // if (scanTypes.includes('configs')) {
-    //   logDebug("🔍 Running Config Scanner...");
-    //   await require('./config-scanner')(); // Replace with your config scanner
-    //   logDebug("Debug: Config scan completed.");
-    // }
+    if (scanTypes.includes('configs')) {
+      logDebug("🔍 Running Config Scanner...");
+      await require('./config-scanner')(); // Replace with your config scanner
+      logDebug("Debug: Config scan completed.");
+    }
 
     // Fetch the branch name for debug logging
     const branchName = process.env.GITHUB_REF_NAME;
