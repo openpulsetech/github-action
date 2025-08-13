@@ -109,7 +109,7 @@ async function uploadSBOM() {
       headers,
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-      timeout: 120000 // optional: 60s timeout
+      timeout: 60000 // optional: 60s timeout
     });
 
     if (response.status >= 200 && response.status < 300) {
