@@ -76,6 +76,7 @@ function parseReport() {
   });
 }
 
+// Send report to API
 async function sendToAPI(payload) {
   if (!apiKey || !secretKey || !tenantKey || !projectId) {
     console.error("❌ Missing API credentials or project ID.");
@@ -105,6 +106,7 @@ async function sendToAPI(payload) {
   }
 }
 
+// Cleanup report file
 function cleanUp() {
   try {
     if (fs.existsSync(reportPath)) {
@@ -116,8 +118,8 @@ function cleanUp() {
   }
 }
 
-// Runner
-(async function run() {
+// ✅ Exported async function (main entry point)
+module.exports = async function () {
   try {
     await runTrivyScan();
     const report = await parseReport();
@@ -138,4 +140,4 @@ function cleanUp() {
   } finally {
     cleanUp();
   }
-})();
+};
