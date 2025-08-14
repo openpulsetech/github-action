@@ -118,17 +118,19 @@ function mapToSBOMSecret(item) {
 
 // Utility to pad File path with dummy segments
 function fixFilePath(filePath) {
-    if (!filePath) return '/dummy/path/with/missing/segments';
+    if (!filePath) return '///////'; // 7 slashes = 8 empty segments
 
-    // Remove empty segments (from leading slashes)
-    let segments = filePath.split('/').filter(Boolean);
+    let segments = filePath.split('/');
     const requiredSegments = 8;
 
-    while (segments.length < requiredSegments) {
-        segments.unshift('dummy');
+    // Count only actual segments; empty strings from leading/trailing slashes are valid
+    const nonEmptyCount = segments.filter(Boolean).length;
+
+    while (nonEmptyCount + segments.length - nonEmptyCount < requiredSegments) {
+        segments.unshift('');
     }
 
-    return '/' + segments.join('/');
+    return segments.join('/');
 }
 
 async function sendSecretsToApi(projectId, secretItems) {
